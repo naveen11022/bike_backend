@@ -1,0 +1,30 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import auth, vehicles
+from app.core.database import Base, engine
+from fastapi.staticfiles import StaticFiles
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Bike Rental API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://bike-frontend-zeta.vercel.app"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+app.include_router(auth.router)
+app.include_router(vehicles.router)
+
+@app.get("/")
+def root():
+    return {"message": "Bike Rental API is running"}
